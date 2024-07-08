@@ -137,11 +137,11 @@ const performCalculation = () => {
 
 const revertChange = () => {
   if (iptBox.textContent.length <= 0) return;
-  
+
   const numDeleteChars = (oprtr.length > 0 && rhsIn.length <= 0) ? 3 : 1;
   iptBox.textContent = iptBox.textContent.slice(0, iptBox.textContent.length - numDeleteChars);
 
-  if (iptBox.textContent === "ANS") toggleDelete(false);
+  if (iptBox.textContent === "ANS") toggleDelete(false) && toggleNumber(false);
 
   if (lhsIn.length <= 1 && oprtr.length <= 0) {
     resetToIntialState();
@@ -152,7 +152,7 @@ const revertChange = () => {
   } else if (rhsIn.length > 0) {
     rhsIn = rhsIn.slice(0, rhsIn.length - 1);
   }
-};
+}
 
 const manageClickButtons = (event) => {
   switch (event.target.id) {
@@ -177,4 +177,34 @@ const manageClickButtons = (event) => {
     case "delete": revertChange(); break;
   }
 };
+
+const managePressKeys = (event) => {
+  switch (event.key) {
+    case "0": numpd0.click(); break;
+    case "1": numpd1.click(); break;
+    case "2": numpd2.click(); break;
+    case "3": numpd3.click(); break;
+    case "4": numpd4.click(); break;
+    case "5": numpd5.click(); break;
+    case "6": numpd6.click(); break;
+    case "7": numpd7.click(); break;
+    case "8": numpd8.click(); break;
+    case "9": numpd9.click(); break;
+
+    case "+": addBtn.click(); break;
+    case "-": subBtn.click(); break;
+    case "*": mulBtn.click(); break;
+    case "/": divBtn.click(); break;
+
+    case "Enter":
+    case "=": eqlBtn.click(); break;
+
+    case "Escape": clrBtn.click(); break;
+
+    case "Backspace":
+    case "Delete": delBtn.click(); break;
+  }
+}
+
 document.addEventListener("click", manageClickButtons);
+document.addEventListener("keydown", managePressKeys);
