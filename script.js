@@ -22,6 +22,10 @@ const dotBtn = document.querySelector("#decimal");
 
 // Intial state of displays and buttons
 let failed = false;
+let overflow = false;
+
+const OVERFLOW_DIGIT_LIMIT = 19;
+const OVERFLOW_OPERATOR_LIMIT = 21;
 
 const clearDisplay = () => iptBox.textContent = optBox.textContent = "";
 
@@ -47,6 +51,18 @@ const toggleNumber = (enabled) => {
 };
 
 const toggleFailedState = (isFail) => failed = isFail;
+
+const toggleOverflowState = (isOverflow) => {
+  overflow = isOverflow;
+  if (overflow) {
+    toggleNumber(false); toggleCleaner(true);
+    toggleDecimal(false); toggleEqual(true);
+    toggleOperator(false);
+  } else {
+    toggleNumber(true); toggleDecimal(true);
+    toggleEqual(true); toggleOperator(true);
+  }
+};
 
 // Computation variables
 let lhsIn;
@@ -87,6 +103,9 @@ const inputNumber = function (digit) {
     rhsIn += digit;
 
   iptBox.textContent += digit;
+
+  if (iptBox.textContent.length >= OVERFLOW_DIGIT_LIMIT)
+    toggleOverflowState(true);
 };
 
 const inputOperator = function (operator) {
@@ -115,6 +134,8 @@ const inputOperator = function (operator) {
   }
 
   iptBox.innerHTML += ` ${opStr} `;
+  if (iptBox.textContent.length >= OVERFLOW_OPERATOR_LIMIT)
+    toggleOverflowState(true);
 };
 
 const performCalculation = () => {
@@ -152,16 +173,19 @@ const revertChange = () => {
   iptBox.textContent = iptBox.textContent.slice(0, iptBox.textContent.length - numDeleteChars);
   if (iptBox.textContent === "") return resetToIntialState();
 
+  if (overflow) toggleOverflowState(false);
+
   if (lhsIn.length <= 1 && oprtr.length <= 0) {
     resetToIntialState();
   } else if (lhsIn.length > 1 && oprtr.length <= 0) {
     lhsIn = lhsIn.slice(0, lhsIn.length - 1);
+    if (lhsIn.includes(".")) toggleDecimal(false);
   } else if (oprtr.length > 0 && rhsIn.length <= 0) {
     oprtr = ""; toggleOperator(true); toggleDecimal(true);
     if (lhsIn.includes(".")) toggleDecimal(false);
   } else if (rhsIn.length > 0) {
     rhsIn = rhsIn.slice(0, rhsIn.length - 1);
-    if (rhsIn === "") toggleDecimal(false);
+    if (rhsIn === "" || rhsIn.includes(".")) toggleDecimal(false);
   }
   
   if (iptBox.textContent === "ANS") {
