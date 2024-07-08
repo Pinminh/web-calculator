@@ -20,22 +20,32 @@ const delBtn = document.querySelector("#delete");
 const dotBtn = document.querySelector("#decimal");
 
 // Computation variables
-let lhsIn = null;
+let lhsIn = "";
 let oprtr = "";
-let rhsIn = null;
+let rhsIn = "";
 let answer = 0;
 
-const updateInputBox = function (string) {
-  iptBox.textContent += string + " ";
+const inputNumber = function (digit) {
+  if (iptBox.textContent.length <= 0 || Number(iptBox.textContent))
+    lhsIn += digit;
+  else
+    rhsIn += digit;
+
+  iptBox.textContent += digit;
 };
 
-const inputNumber = function (number) {
-  if (iptBox.textContent.length <= 0)
-    lhsIn = number;
-  else
-    rhsIn = number;
+const inputOperator = function (operator) {
+  oprtr = operator;
 
-  updateInputBox(number);
+  let opStr = null;
+  switch (operator) {
+    case "add": opStr = "&plus;"; break;
+    case "sub": opStr = "&minus;"; break;
+    case "mul": opStr = "&times;"; break;
+    case "div": opStr = "&divide;"; break;
+  }
+
+  iptBox.innerHTML += ` ${opStr} `;
 };
 
 const manageClickButtons = (event) => {
@@ -50,6 +60,11 @@ const manageClickButtons = (event) => {
     case "num7": inputNumber(7); break;
     case "num8": inputNumber(8); break;
     case "num9": inputNumber(9); break;
+
+    case "add": inputOperator("add"); break;
+    case "subtract": inputOperator("sub"); break;
+    case "multiply": inputOperator("mul"); break;
+    case "divide": inputOperator("div"); break;
   }
 };
 document.addEventListener("click", manageClickButtons);
