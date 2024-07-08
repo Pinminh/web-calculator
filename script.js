@@ -15,17 +15,53 @@ const addBtn = document.querySelector("#add");
 const subBtn = document.querySelector("#subtract");
 const mulBtn = document.querySelector("#multiply");
 const divBtn = document.querySelector("#divide");
+const eqlBtn = document.querySelector("#equal");
 const clrBtn = document.querySelector("#clear");
 const delBtn = document.querySelector("#delete");
 const dotBtn = document.querySelector("#decimal");
+
+// Intial state of displays and buttons
+const clearDisplay = () => iptBox.textContent = optBox.textContent = "";
+
+const toggleOperator = (enabled) => {
+  addBtn.disabled = subBtn.disabled = mulBtn.disabled = divBtn.disabled = !enabled;
+};
+
+const toggleCleaner = (enabled) => {
+  clrBtn.disabled = delBtn.disabled = !enabled;
+};
+
+const toggleEqual = (enabled) => eqlBtn.disabled = !enabled;
+
+const toggleDecimal = (enabled) => dotBtn.disabled = !enabled;
+
+const toggleNumber = (enabled) => {
+  numpd0.disabled = !enabled;
+  numpd1.disabled = numpd2.disabled = numpd3.disabled = !enabled;
+  numpd4.disabled = numpd5.disabled = numpd6.disabled = !enabled;
+  numpd7.disabled = numpd8.disabled = numpd9.disabled = !enabled;
+};
+
+clearDisplay();
+toggleOperator(false);
+toggleCleaner(false);
+toggleEqual(false);
+toggleDecimal(false);
+
+let failed = false;
 
 // Computation variables
 let lhsIn = "";
 let oprtr = "";
 let rhsIn = "";
-let answer = 0;
+let answer = "";
 
 const inputNumber = function (digit) {
+  if (iptBox.textContent.length <= 0) toggleOperator(true);
+  toggleCleaner(true);
+  toggleDecimal(true);
+  toggleEqual(true);
+  
   if (iptBox.textContent.length <= 0 || Number(iptBox.textContent))
     lhsIn += digit;
   else
@@ -35,6 +71,18 @@ const inputNumber = function (digit) {
 };
 
 const inputOperator = function (operator) {
+  toggleNumber(true);
+  toggleOperator(false);
+  toggleEqual(false);
+
+  if (answer || failed) {
+    failed = false;
+    lhsIn = answer;
+    rhsIn = "";
+    clearDisplay();
+    iptBox.textContent = "ANS";
+  }
+
   oprtr = operator;
 
   let opStr = null;
@@ -46,6 +94,29 @@ const inputOperator = function (operator) {
   }
 
   iptBox.innerHTML += ` ${opStr} `;
+};
+
+const performCalculation = () => {
+  toggleNumber(false);
+  toggleOperator(true);
+  toggleDecimal(false);
+
+  const lhs = Number(lhsIn);
+  const rhs = Number(rhsIn);
+  let ans = answer;
+
+  switch (oprtr) {
+    case "add": ans = lhs + rhs; break;
+    case "sub": ans = lhs - rhs; break;
+    case "mul": ans = lhs * rhs; break;
+    case "div": ans = (rhs === 0) ? "Can't divide by zero" : (lhs / rhs); break;
+    default: ans = lhs;
+  }
+
+  optBox.textContent = ans;
+  
+  if (Number(ans)) answer = ans;
+  else failed = true;
 };
 
 const manageClickButtons = (event) => {
@@ -65,6 +136,8 @@ const manageClickButtons = (event) => {
     case "subtract": inputOperator("sub"); break;
     case "multiply": inputOperator("mul"); break;
     case "divide": inputOperator("div"); break;
+
+    case "equal": performCalculation(); break;
   }
 };
 document.addEventListener("click", manageClickButtons);
