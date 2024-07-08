@@ -71,9 +71,14 @@ const resetToIntialState = () => {
 resetToIntialState();
 
 const inputNumber = function (digit) {
-  if (iptBox.textContent.length <= 0) toggleOperator(true);
+  if (iptBox.textContent.length <= 0) {
+    toggleOperator(true);
+    toggleDecimal(true);
+  }
+
+  if (oprtr.length > 0 && rhsIn.length <= 0) toggleDecimal(true);
+
   toggleCleaner(true);
-  toggleDecimal(true);
   toggleEqual(true);
 
   if (iptBox.textContent.length <= 0 || Number(iptBox.textContent))
@@ -89,10 +94,11 @@ const inputOperator = function (operator) {
   toggleOperator(false);
   toggleEqual(false);
   toggleCleaner(true);
+  toggleDecimal(false);
 
   if (optBox.textContent.length > 0 || failed) {
     failed = false;
-    lhsIn = answer;
+    lhsIn = String(answer);
     rhsIn = "";
     clearDisplay();
     iptBox.textContent = "ANS";
@@ -138,21 +144,35 @@ const performCalculation = () => {
 const revertChange = () => {
   if (iptBox.textContent.length <= 0) return;
 
-  const numDeleteChars = (oprtr.length > 0 && rhsIn.length <= 0) ? 3 : 1;
-  iptBox.textContent = iptBox.textContent.slice(0, iptBox.textContent.length - numDeleteChars);
+  if (iptBox.textContent[iptBox.textContent.length - 1] === ".") toggleDecimal(true);
 
-  if (iptBox.textContent === "ANS") toggleDelete(false) && toggleNumber(false);
+  let numDeleteChars = (oprtr.length > 0 && rhsIn.length <= 0) ? 3 : 1;
+  numDeleteChars = (iptBox.textContent === "ANS") ? 3 : numDeleteChars;
+
+  iptBox.textContent = iptBox.textContent.slice(0, iptBox.textContent.length - numDeleteChars);
+  if (iptBox.textContent === "") return resetToIntialState();
 
   if (lhsIn.length <= 1 && oprtr.length <= 0) {
     resetToIntialState();
   } else if (lhsIn.length > 1 && oprtr.length <= 0) {
     lhsIn = lhsIn.slice(0, lhsIn.length - 1);
   } else if (oprtr.length > 0 && rhsIn.length <= 0) {
-    oprtr = ""; toggleOperator(true);
+    oprtr = ""; toggleOperator(true); toggleDecimal(true);
+    if (lhsIn.includes(".")) toggleDecimal(false);
   } else if (rhsIn.length > 0) {
     rhsIn = rhsIn.slice(0, rhsIn.length - 1);
+    if (rhsIn === "") toggleDecimal(false);
   }
-}
+  
+  if (iptBox.textContent === "ANS") {
+    toggleNumber(false); toggleDecimal(false);
+  }
+};
+
+const inputDecimal = () => {
+  toggleDecimal(false);
+  inputNumber(".");
+};
 
 const manageClickButtons = (event) => {
   switch (event.target.id) {
@@ -175,6 +195,8 @@ const manageClickButtons = (event) => {
 
     case "clear": resetToIntialState(); break;
     case "delete": revertChange(); break;
+
+    case "decimal": inputDecimal(); break;
   }
 };
 
@@ -203,6 +225,8 @@ const managePressKeys = (event) => {
 
     case "Backspace":
     case "Delete": delBtn.click(); break;
+
+    case ".": dotBtn.click(); break;
   }
 }
 
