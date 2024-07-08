@@ -21,6 +21,8 @@ const delBtn = document.querySelector("#delete");
 const dotBtn = document.querySelector("#decimal");
 
 // Intial state of displays and buttons
+let failed = false;
+
 const clearDisplay = () => iptBox.textContent = optBox.textContent = "";
 
 const toggleOperator = (enabled) => {
@@ -30,6 +32,8 @@ const toggleOperator = (enabled) => {
 const toggleCleaner = (enabled) => {
   clrBtn.disabled = delBtn.disabled = !enabled;
 };
+
+const toggleDelete = (enabled) => delBtn.disabled = !enabled;
 
 const toggleEqual = (enabled) => eqlBtn.disabled = !enabled;
 
@@ -42,26 +46,36 @@ const toggleNumber = (enabled) => {
   numpd7.disabled = numpd8.disabled = numpd9.disabled = !enabled;
 };
 
-clearDisplay();
-toggleOperator(false);
-toggleCleaner(false);
-toggleEqual(false);
-toggleDecimal(false);
-
-let failed = false;
+const toggleFailedState = (isFail) => failed = isFail;
 
 // Computation variables
-let lhsIn = "";
-let oprtr = "";
-let rhsIn = "";
-let answer = "";
+let lhsIn;
+let oprtr;
+let rhsIn;
+let answer = 0;
+
+const resetToIntialState = () => {
+  clearDisplay();
+  toggleOperator(false);
+  toggleCleaner(false);
+  toggleEqual(false);
+  toggleDecimal(false);
+  toggleNumber(true);
+  toggleFailedState(false);
+
+  lhsIn = "";
+  oprtr = "";
+  rhsIn = "";
+};
+
+resetToIntialState();
 
 const inputNumber = function (digit) {
   if (iptBox.textContent.length <= 0) toggleOperator(true);
   toggleCleaner(true);
   toggleDecimal(true);
   toggleEqual(true);
-  
+
   if (iptBox.textContent.length <= 0 || Number(iptBox.textContent))
     lhsIn += digit;
   else
@@ -74,8 +88,9 @@ const inputOperator = function (operator) {
   toggleNumber(true);
   toggleOperator(false);
   toggleEqual(false);
+  toggleCleaner(true);
 
-  if (answer || failed) {
+  if (optBox.textContent.length > 0 || failed) {
     failed = false;
     lhsIn = answer;
     rhsIn = "";
@@ -100,6 +115,7 @@ const performCalculation = () => {
   toggleNumber(false);
   toggleOperator(true);
   toggleDecimal(false);
+  toggleDelete(false);
 
   const lhs = Number(lhsIn);
   const rhs = Number(rhsIn);
@@ -114,9 +130,28 @@ const performCalculation = () => {
   }
 
   optBox.textContent = ans;
-  
+
   if (Number(ans)) answer = ans;
-  else failed = true;
+  else toggleFailedState(true);
+};
+
+const revertChange = () => {
+  if (iptBox.textContent.length <= 0) return;
+  
+  const numDeleteChars = (oprtr.length > 0 && rhsIn.length <= 0) ? 3 : 1;
+  iptBox.textContent = iptBox.textContent.slice(0, iptBox.textContent.length - numDeleteChars);
+
+  if (iptBox.textContent === "ANS") toggleDelete(false);
+
+  if (lhsIn.length <= 1 && oprtr.length <= 0) {
+    resetToIntialState();
+  } else if (lhsIn.length > 1 && oprtr.length <= 0) {
+    lhsIn = lhsIn.slice(0, lhsIn.length - 1);
+  } else if (oprtr.length > 0 && rhsIn.length <= 0) {
+    oprtr = ""; toggleOperator(true);
+  } else if (rhsIn.length > 0) {
+    rhsIn = rhsIn.slice(0, rhsIn.length - 1);
+  }
 };
 
 const manageClickButtons = (event) => {
@@ -136,8 +171,10 @@ const manageClickButtons = (event) => {
     case "subtract": inputOperator("sub"); break;
     case "multiply": inputOperator("mul"); break;
     case "divide": inputOperator("div"); break;
-
     case "equal": performCalculation(); break;
+
+    case "clear": resetToIntialState(); break;
+    case "delete": revertChange(); break;
   }
 };
 document.addEventListener("click", manageClickButtons);
